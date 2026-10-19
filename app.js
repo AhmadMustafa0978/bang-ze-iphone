@@ -1,7 +1,10 @@
 import {enter,setPhase,alignNavigation,sweep,openDialog} from './motion.js';
 const $ = s => document.querySelector(s);
-const cfg = window.BANGZE_CONFIG || {};
-const apiBase = (cfg.apiBase || '').replace(/\/$/, '');
+// The published Pages build has a fixed API origin. The Docker build uses
+// its own origin. Neither depends on an asynchronously loaded config script.
+const apiBase = location.hostname === 'ahmadmustafa0978.github.io'
+  ? 'https://bang-ze-engine.onrender.com'
+  : '';
 const KEY = 'bangze-history-v1';
 const ACTIVE = new Set(['queued', 'downloading', 'processing']);
 const labels = {queued:'في الانتظار',downloading:'تنزيل إلى مساحة التجهيز',processing:'تجهيز الصيغة النهائية',ready:'جاهز للحفظ',failed:'تعذّر التجهيز',cancelled:'أُلغي التجهيز',expired:'انتهت النسخة المؤقتة'};
@@ -19,10 +22,6 @@ function bytes(n) { if(!Number.isFinite(n)||n<=0)return ''; return n<1048576?`${
 function showView(id) { for(const name of ['download-view','history-view','storage-view']) $(`#${name}`).hidden=name!==id; document.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-current',b.dataset.view===id?'page':'false')); if(id==='history-view')renderHistory(); alignNavigation();enter($(`#${id}`));window.scrollTo({top:0,behavior:'instant'}); }
 function message(text,error=false) { $('#link-message').textContent=text; $('#link-message').classList.toggle('error',error); }
 function dialog(id) { openDialog($(id)); }
-function needService() {
-  if(!cfg.configured) { message('واجهة Bang-ZE جاهزة. خدمة تجهيز الروابط لم تُربط بالاستضافة بعد؛ التنزيل غير متاح الآن.',true); return true; }
-  return false;
-}
 async function ensureSession(force=false){
   if(token&&!force)return;
   if(sessionPromise)return sessionPromise;
@@ -50,7 +49,6 @@ function clientLink(value) {
 $('#link-form').addEventListener('submit',async e=>{
   e.preventDefault(); if(busy)return;
   let url;try{url=clientLink($('#url').value);}catch(err){message(err.message,true);return;}
-  if(needService())return;
   busy=true;setPhase('reading');$('#inspect').disabled=true;$('#inspect span').textContent='قراءة الرابط…';$('#preview').hidden=true;preview=null;
   previewController?.abort(); previewController=new AbortController();
   const timeout=setTimeout(()=>previewController.abort(),90000);
@@ -80,7 +78,7 @@ function renderFormats() {
 }
 document.querySelectorAll('input[name=mode]').forEach(r=>r.addEventListener('change',()=>{renderFormats();enter($('#quality'));}));
 $('#prepare').addEventListener('click',async()=>{
-  if(!preview||needService())return;
+  if(!preview)return;
   $('#prepare').disabled=true;message('');
   try{const job=await api('/jobs',{method:'POST',body:JSON.stringify({preview_id:preview.id,option_id:$('#quality').value})});upsert(job);renderJobs();schedulePoll(500);toast('بدأ تجهيز اختيارك.');}
   catch(err){message(err.message||'تعذّر الاتصال بالخدمة.',true);}
@@ -100,7 +98,7 @@ function jobMarkup(job) {
   return `<article class="job" data-job="${escape(job.id)}" data-status="${escape(job.status)}"><div class="job-top"><h3>${escape(job.title)}</h3><small dir="ltr">${escape(job.format)}</small></div><p class="status">${escape(labels[job.status]||job.status)}</p>${active?`<progress max="100" ${percent!==null&&job.status==='downloading'?`value="${percent}"`:''} aria-label="تقدم تجهيز الملف"></progress><div class="job-details">${percent!==null&&job.status==='downloading'?`${percent.toFixed(0)}%`:''} ${bytes(job.downloaded)} ${job.speed?`· ${bytes(job.speed)}/ث`:''}</div>`:''}${job.error?`<p class="error">${escape(job.error)}</p>`:''}${ready&&path?`<a class="download-link" href="${escape(apiBase+path)}" target="_blank" rel="noopener" data-save="${escape(job.id)}">حفظ في الملفات${job.size?' · '+bytes(job.size):''}</a><p class="job-details">الرابط مؤقت حتى ${new Date(job.expires*1000).toLocaleTimeString('ar',{hour:'2-digit',minute:'2-digit'})}. فتحه لا يؤكد اكتمال الحفظ على الجهاز.</p>`:''}<div class="job-actions">${active?`<button class="text-button" data-cancel="${escape(job.id)}">إلغاء</button>`:''}${['failed','expired','cancelled'].includes(job.status)?`<button class="text-button" data-retry="${escape(job.id)}">معاينة الرابط مجددًا</button>`:''}</div></article>`;
 }
 function renderJobs() { const values=[...jobs.values()].sort((a,b)=>b.created-a.created);const prior=new Map([...$('#jobs').children].map(el=>[el.dataset.job,el.dataset.status]));$('#jobs').innerHTML=values.map(jobMarkup).join('');$('#activity-heading').hidden=!values.length;$('#job-count').textContent=values.filter(j=>ACTIVE.has(j.status)).length;for(const el of $('#jobs').children){if(prior.get(el.dataset.job)!==el.dataset.status)enter(el);}if(values.some(j=>ACTIVE.has(j.status)))setPhase('working');else if(values[0]?.status==='ready')setPhase('ready'); }
-function schedulePoll(delay=3000){clearTimeout(pollTimer);if(!document.hidden&&navigator.onLine&&token&&cfg.configured)pollTimer=setTimeout(poll,delay);}
+function schedulePoll(delay=3000){clearTimeout(pollTimer);if(!document.hidden&&navigator.onLine&&token)pollTimer=setTimeout(poll,delay);}
 async function poll() {
   const ids=[...new Set([...jobs.values()].filter(j=>ACTIVE.has(j.status)).map(j=>j.id).concat(history.filter(h=>ACTIVE.has(h.status)||h.status==='ready').slice(0,10).map(h=>h.id)))];
   let lost=false;
@@ -124,8 +122,7 @@ $('#clear-history').addEventListener('click',clearHistory);$('#clear-local').add
 document.querySelectorAll('[data-view],[data-open]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.view||b.dataset.open)));
 $('#install').addEventListener('click',()=>dialog('#install-dialog'));
 document.querySelectorAll('dialog .close,dialog .close-action').forEach(b=>b.addEventListener('click',()=>b.closest('dialog').close()));
-if(!cfg.configured){$('#service-notice').hidden=false;$('#service-notice').innerHTML='<strong>الاستضافة قيد التجهيز</strong>هذه معاينة واجهة قابلة للتثبيت. تنزيل الروابط سيعمل بعد ربط خادم المعالجة.';}
 function connection(){ $('#offline').hidden=navigator.onLine;if(navigator.onLine)schedulePoll(0); }
 window.addEventListener('online',connection);window.addEventListener('offline',connection);document.addEventListener('visibilitychange',()=>{if(document.hidden)clearTimeout(pollTimer);else schedulePoll(0);});
-if('serviceWorker'in navigator)navigator.serviceWorker.register(new URL('sw.js',document.baseURI).pathname).catch(()=>{});
+if('serviceWorker'in navigator)navigator.serviceWorker.register(new URL('sw.js',document.baseURI).pathname,{updateViaCache:'none'}).then(registration=>registration.update()).catch(()=>{});
 connection();renderJobs();
