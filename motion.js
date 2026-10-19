@@ -60,6 +60,7 @@ export function alignNavigation(){
   if(!active)return;
   const old=getComputedStyle(lens).transform;
   const x=active.offsetLeft-(nav.clientWidth-lens.offsetWidth-6);
+  if(lens.style.getPropertyValue('--nav-x')===`${x}px`)return;
   lens.style.setProperty('--nav-x',`${x}px`);
   const target=`translateX(${x}px)`;
   if(old==='none')return;
@@ -122,6 +123,7 @@ const core=(()=>{
     const glitch=phase==='error'&&now-lastGlitch>140;
     if(glitch)lastGlitch=now;
     const band=Math.random()*H,shift=(Math.random()-.5)*36*dpr;
+    const breath=scale*(1+Math.sin(t*.8)*.012);
     for(let i=0;i<COUNT;i++){
       let tx,ty;
       if(phase==='linked'){
@@ -135,8 +137,8 @@ const core=(()=>{
         if(radius[i]<.03)radius[i]=.42+Math.random()*.14;
         tx=cx+Math.cos(angle[i])*radius[i]*scale;ty=cy+Math.sin(angle[i])*radius[i]*scale*.9;
       }else{
-        tx=cx+shape[i*2]*scale+Math.sin(t*1.4+seed[i]*40)*1.6*dpr;
-        ty=cy+shape[i*2+1]*scale+Math.cos(t*1.2+seed[i]*50)*1.6*dpr;
+        tx=cx+shape[i*2]*breath;
+        ty=cy+shape[i*2+1]*breath;
       }
       vx[i]=(vx[i]+(tx-x[i])*k)*damp;vy[i]=(vy[i]+(ty-y[i])*k)*damp;
       const dx=x[i]-px,dy=y[i]-py,d2=dx*dx+dy*dy;
@@ -150,10 +152,10 @@ const core=(()=>{
     ctx.globalCompositeOperation='lighter';
     const colors=PALETTES[phase]||PLASMA,size=1.5*dpr;
     for(let b=0;b<6;b++){
-      ctx.fillStyle=colors[(b+Math.floor(t*(phase==='reading'?3:.6)))%6];
+      ctx.fillStyle=colors[b];
       ctx.globalAlpha=b===5?.95:.78;
       const s=b===5?size*1.5:size;
-      for(let i=b;i<COUNT;i+=6)ctx.fillRect(x[i],y[i],s,s);
+      for(let i=b;i<COUNT;i+=6)ctx.fillRect(Math.round(x[i]),Math.round(y[i]),s,s);
     }
     ctx.globalAlpha=1;
   }
@@ -226,7 +228,7 @@ export function setPhase(phase){
 
 /* ---------- Pointer-reactive surfaces ---------- */
 const TILT='.composer,.job,.storage-list article';
-const MAGNET='.primary,.install-button,.paste,.navigation button,.download-link,.brand,.platforms span,.text-button';
+const MAGNET='.primary,.ghost-action,.install-button,.navigation button,.download-link,.brand,.platforms span,.text-button';
 let tilted=null,magnet=null,frame=0;
 function resetTilt(el){if(el){el.style.removeProperty('--rx');el.style.removeProperty('--ry');el.classList.remove('is-lit');}}
 function resetMagnet(el){if(el)el.style.translate='';}
@@ -253,6 +255,7 @@ function onPointer(){
   }
 }
 addEventListener('pointermove',e=>{pointer.x=e.clientX;pointer.y=e.clientY;if(!frame)frame=requestAnimationFrame(onPointer);},{passive:true});
+for(const type of ['pointerup','pointercancel'])addEventListener(type,e=>{if(e.pointerType!=='mouse')pointer.x=pointer.y=-1e5;},{passive:true});
 document.documentElement.addEventListener('pointerleave',()=>{pointer.x=pointer.y=-1e5;resetTilt(tilted);resetMagnet(magnet);tilted=magnet=null;});
 
 // Custom cursor with a plasma comet tail, on precise pointers only.
@@ -293,7 +296,7 @@ const brandWord=document.querySelector('.brand-word');
 if(brandWord){decode(brandWord);document.querySelector('.brand').addEventListener('pointerenter',()=>decode(brandWord));}
 
 document.addEventListener('pointerdown',event=>{
-  const button=event.target.closest('.primary,.download-link,.paste,.navigation button,.mode label,.install-button');
+  const button=event.target.closest('.primary,.ghost-action,.download-link,.share-card,.navigation button,.install-button');
   if(!button||button.disabled)return;
   fx.emit(event.clientX,event.clientY,button.matches('.primary,.download-link')?26:12,button.matches('.primary,.download-link')?7:4);
   if(!button.matches('.primary,.download-link'))return;

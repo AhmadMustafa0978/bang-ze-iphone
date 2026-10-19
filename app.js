@@ -1,4 +1,4 @@
-import {enter,setPhase,alignNavigation,sweep,openDialog} from './motion.js?v=2.0.1';
+import {enter,setPhase,alignNavigation,openDialog} from './motion.js?v=2.1.0';
 const $ = s => document.querySelector(s);
 // The published Pages build has a fixed API origin. The Docker build uses
 // its own origin. Neither depends on an asynchronously loaded config script.
@@ -9,6 +9,8 @@ const KEY = 'bangze-history-v1';
 const ACTIVE = new Set(['queued', 'downloading', 'processing']);
 const labels = {queued:'في الانتظار',downloading:'تنزيل إلى مساحة التجهيز',processing:'تجهيز الصيغة النهائية',ready:'جاهز للحفظ',failed:'تعذّر التجهيز',cancelled:'أُلغي التجهيز',expired:'انتهت النسخة المؤقتة'};
 let preview = null, previewController, pollTimer, toastTimer, busy = false;
+// Jobs started on this page open their save link by themselves when ready.
+const autoSave = new Set();
 let token = readStorage('bangze-visitor-v1') || '';
 let sessionPromise;
 let history = readHistory();
@@ -38,52 +40,73 @@ async function api(path,options={}) {
   }
   return body;
 }
+// Apps often share a sentence around the link; the first https link is used.
 function clientLink(value) {
-  let u; try{u=new URL(value.trim());}catch{throw new Error('ألصق رابطًا كاملًا يبدأ بـ https://');}
-  if(u.protocol!=='https:'||u.username||u.password||u.port)throw new Error('استخدم رابط HTTPS مباشرًا من المنصة.');
+  const found=String(value||'').match(/https:\/\/[^\s<>"'“”]+/i);
+  if(!found)throw new Error('لم نجد رابطًا. انسخ رابط الفيديو من التطبيق ثم اضغط الزر.');
+  let u; try{u=new URL(found[0].replace(/[).,،]+$/,''));}catch{throw new Error('الرابط غير مكتمل. انسخه من جديد ثم اضغط الزر.');}
+  if(u.username||u.password||u.port)throw new Error('استخدم رابط HTTPS مباشرًا من المنصة.');
   const host=u.hostname.toLowerCase();
-  if(!['youtube.com','www.youtube.com','m.youtube.com','music.youtube.com','youtu.be','instagram.com','www.instagram.com','facebook.com','www.facebook.com','m.facebook.com','fb.watch','pinterest.com','www.pinterest.com','pin.it'].includes(host))throw new Error('ألصق رابط منشور من YouTube أو Instagram أو Facebook أو Pinterest.');
-  if(u.pathname.startsWith('/playlist') || (/youtube\.com$/.test(host) && !['/watch','/shorts/','/live/'].some(p=>u.pathname.startsWith(p))))throw new Error('هذه النسخة للروابط المفردة. افتح الفيديو نفسه وانسخ رابطه.');
+  if(!['youtube.com','www.youtube.com','m.youtube.com','music.youtube.com','youtu.be','instagram.com','www.instagram.com','facebook.com','www.facebook.com','m.facebook.com','fb.watch','pinterest.com','www.pinterest.com','pin.it'].includes(host))throw new Error('هذا الرابط ليس من YouTube أو Instagram أو Facebook أو Pinterest.');
+  if(u.pathname.startsWith('/playlist') || (/youtube\.com$/.test(host) && !['/watch','/shorts/','/live/'].some(p=>u.pathname.startsWith(p))))throw new Error('هذا رابط قائمة أو قناة. افتح الفيديو نفسه وانسخ رابطه.');
   return u.href;
 }
-$('#link-form').addEventListener('submit',async e=>{
-  e.preventDefault(); if(busy)return;
-  let url;try{url=clientLink($('#url').value);}catch(err){message(err.message,true);return;}
-  busy=true;setPhase('reading');$('#inspect').disabled=true;$('#inspect span').textContent='قراءة الرابط…';$('#preview').hidden=true;preview=null;
-  previewController?.abort(); previewController=new AbortController();
+const actions=[...document.querySelectorAll('[data-mode]')].map(button=>({button,label:button.querySelector('span').textContent}));
+function setBusy(active){for(const {button,label} of actions){button.disabled=!!active;button.querySelector('span').textContent=button===active?'نجهّز…':label;button.classList.toggle('is-working',button===active);}}
+async function readClipboard(){try{return await navigator.clipboard.readText();}catch{return '';}}
+// One action: read the link, choose the best real format, start the job.
+async function start(mode,button){
+  if(busy)return;
+  busy=true;
+  let source=$('#url').value.trim();
+  if(!/https:\/\//i.test(source)){const pasted=(await readClipboard()).slice(0,2048);if(pasted){source=pasted;$('#url').value=pasted;}}
+  let url;
+  try{url=clientLink(source);}catch(err){busy=false;setPhase('error');message(err.message,true);return;}
+  setBusy(button);setPhase('reading');
+  message(mode==='audio'?'نقرأ الرابط ونجهّز الصوت…':'نقرأ الرابط ونجهّز أعلى جودة…');
+  previewController?.abort();previewController=new AbortController();
   const timeout=setTimeout(()=>previewController.abort(),90000);
-  message('نجلب الجودات المتاحة لهذا الرابط.');
-  try{await ensureSession();preview=await api('/preview',{method:'POST',body:JSON.stringify({url}),signal:previewController.signal});renderPreview();message('اختر ما تريد حفظه. لن ننزّل الخيارات الأخرى.');}
-  catch(err){setPhase('error');message(err.name==='AbortError'?'استغرقت قراءة المصدر وقتًا طويلًا. حاول مجددًا.':err.message||'تعذّر الاتصال بالخدمة.',true);}
-  finally{clearTimeout(timeout);busy=false;$('#inspect').disabled=false;$('#inspect span').textContent='معاينة الرابط';}
-});
-$('#url').addEventListener('input',()=>{ previewController?.abort(); preview=null; $('#preview').hidden=true;message('');setPhase($('#url').value.trim()?'linked':'idle'); });
-$('#paste').addEventListener('click',async()=>{try{const value=await navigator.clipboard.readText();$('#url').value=value.slice(0,2048);$('#url').dispatchEvent(new Event('input'));$('#url').focus();}catch{$('#url').focus();toast('اضغط مطولًا داخل مربع الرابط، ثم اختر «لصق».');}});
-function renderPreview() {
+  try{
+    await ensureSession();
+    for(let attempt=0;;attempt++){
+      if(!preview||preview.link!==url){preview=await api('/preview',{method:'POST',body:JSON.stringify({url}),signal:previewController.signal});preview.link=url;}
+      // The server lists video options from the highest quality down.
+      const option=preview.options.find(f=>f.mode===mode);
+      if(!option)throw new Error(mode==='audio'?'هذا الرابط لا يوفّر صوتًا. جرّب زر الفيديو.':'هذا الرابط لا يوفّر فيديو متوافقًا. جرّب زر الصوت.');
+      renderPreview(option);
+      try{
+        const job=await api('/jobs',{method:'POST',body:JSON.stringify({preview_id:preview.id,option_id:option.id})});
+        autoSave.add(job.id);upsert(job);renderJobs();schedulePoll(500);
+        message('بدأ التنزيل. عند الانتهاء يُفتح الحفظ وحده.');
+        break;
+      }catch(err){
+        // A preview expires after 30 minutes or a service restart: read it once more.
+        if(err.status===410&&attempt===0){preview=null;continue;}
+        throw err;
+      }
+    }
+  }catch(err){setPhase('error');message(err.name==='AbortError'?'استغرقت قراءة المصدر وقتًا طويلًا. حاول مجددًا.':err.message||'تعذّر الاتصال بالخدمة.',true);}
+  finally{clearTimeout(timeout);busy=false;setBusy(null);}
+}
+$('#link-form').addEventListener('submit',e=>{e.preventDefault();const button=e.submitter?.dataset.mode?e.submitter:$('#get-video');start(button.dataset.mode,button);});
+$('#url').addEventListener('input',()=>{ if(busy)return; preview=null; $('#preview').hidden=true;message('');setPhase($('#url').value.trim()?'linked':'idle'); });
+// Pasting a link into the box starts the best video without another tap.
+$('#url').addEventListener('paste',()=>setTimeout(()=>{if(/https:\/\//i.test($('#url').value))start('video',$('#get-video'));},0));
+function renderPreview(option) {
   $('#media-title').textContent=preview.title;$('#source').textContent=preview.source;
-  $('#media-info').textContent=preview.duration?`${Math.floor(preview.duration/60)}:${String(Math.floor(preview.duration%60)).padStart(2,'0')}`:'';
+  const duration=preview.duration?`${Math.floor(preview.duration/60)}:${String(Math.floor(preview.duration%60)).padStart(2,'0')}`:'';
+  $('#media-info').textContent=[duration,option.label,bytes(option.size)].filter(Boolean).join(' · ');
   const safeThumb=typeof preview.thumbnail==='string'&&preview.thumbnail.startsWith('https://');
   $('#thumbnail').hidden=!safeThumb; if(safeThumb)$('#thumbnail').src=preview.thumbnail;
-  const video=document.querySelector('input[name=mode][value=video]'), audio=document.querySelector('input[name=mode][value=audio]');
-  video.disabled=!preview.options.some(f=>f.mode==='video');audio.disabled=!preview.options.some(f=>f.mode==='audio');
-  (video.disabled?audio:video).checked=true;renderFormats();$('#preview').hidden=false;setPhase('preview');enter($('#preview'));sweep($('#prepare'));
+  if($('#preview').hidden){$('#preview').hidden=false;enter($('#preview'));}
 }
-function renderFormats() {
-  if(!preview)return;
-  const mode=$('input[name=mode]:checked').value;
-  const options=preview.options.filter(f=>f.mode===mode);
-  $('#quality').innerHTML=options.map(f=>`<option value="${escape(f.id)}">${escape(f.label)}${f.size?' — '+bytes(f.size):''}</option>`).join('');
-  $('#format-note').textContent=mode==='audio'?(options[0]?.extract_from_video?'لا يوفّر المصدر صوتًا منفصلًا؛ يستخرجه الخادم من الفيديو مؤقتًا. ما تحفظه على الآيفون هو M4A فقط.':'نجهّز مسار الصوت وحده بصيغة M4A، دون ملف الفيديو.'):'الجودات مأخوذة من المصدر. لا نكبّر الدقة؛ نفضّل MP4 المتوافق مع الآيفون.';
-  $('#prepare').textContent=mode==='audio'?'تجهيز الصوت فقط':'تجهيز الفيديو';$('#prepare').disabled=!options.length;
+function saveFile(job){
+  const path=typeof job.download_path==='string'&&/^\/files\/[a-f0-9]{32}\?token=/.test(job.download_path)?job.download_path:null;
+  if(!path)return;
+  const link=document.createElement('a');link.href=apiBase+path;link.rel='noopener';document.body.append(link);link.click();link.remove();
+  const row=history.find(h=>h.id===job.id);if(row){row.opened=true;persist();}
+  toast('الملف جاهز. إذا سألك Safari اختر «تنزيل».');
 }
-document.querySelectorAll('input[name=mode]').forEach(r=>r.addEventListener('change',()=>{renderFormats();enter($('#quality'));}));
-$('#prepare').addEventListener('click',async()=>{
-  if(!preview)return;
-  $('#prepare').disabled=true;message('');
-  try{const job=await api('/jobs',{method:'POST',body:JSON.stringify({preview_id:preview.id,option_id:$('#quality').value})});upsert(job);renderJobs();schedulePoll(500);toast('بدأ تجهيز اختيارك.');}
-  catch(err){message(err.message||'تعذّر الاتصال بالخدمة.',true);}
-  finally{renderFormats();}
-});
 function upsert(job) {
   jobs.set(job.id,job);
   const prior=history.find(r=>r.id===job.id);
@@ -104,7 +127,7 @@ function schedulePoll(delay=3000){clearTimeout(pollTimer);if(!document.hidden&&n
 async function poll() {
   const ids=[...new Set([...jobs.values()].filter(j=>ACTIVE.has(j.status)).map(j=>j.id).concat(history.filter(h=>ACTIVE.has(h.status)||h.status==='ready').slice(0,10).map(h=>h.id)))];
   let lost=false;
-  for(const id of ids){try{upsert(await api(`/jobs/${id}`));}catch(err){if([404,410].includes(err.status)){const old=jobs.get(id)||history.find(h=>h.id===id);if(old)upsert({...old,status:'expired',error:'لم تعد النسخة المؤقتة متاحة. أعد معاينة الرابط.'});}else lost=true; if(!token)break;}}
+  for(const id of ids){try{const job=await api(`/jobs/${id}`);upsert(job);if(job.status==='ready'&&autoSave.delete(id))saveFile(job);}catch(err){if([404,410].includes(err.status)){const old=jobs.get(id)||history.find(h=>h.id===id);if(old)upsert({...old,status:'expired',error:'لم تعد النسخة المؤقتة متاحة. أعد معاينة الرابط.'});}else lost=true; if(!token)break;}}
   if(lost)message('تعذّر تحديث بعض الملفات. سنحاول مجددًا عند الاتصال؛ لا يعني ذلك فشل التجهيز.',true);
   renderJobs();
   const values=[...jobs.values()];
@@ -114,7 +137,7 @@ async function poll() {
 $('#jobs').addEventListener('click',async e=>{
   const cancel=e.target.closest('[data-cancel]'),retry=e.target.closest('[data-retry]'),save=e.target.closest('[data-save]');
   if(cancel){cancel.disabled=true;try{upsert(await api(`/jobs/${cancel.dataset.cancel}`,{method:'DELETE'}));renderJobs();}catch(err){toast(err.message);cancel.disabled=false;}}
-  if(retry){const job=jobs.get(retry.dataset.retry);$('#url').value=job.url;$('#link-form').requestSubmit();window.scrollTo({top:0,behavior:'smooth'});}
+  if(retry){const job=jobs.get(retry.dataset.retry);$('#url').value=job.url;preview=null;window.scrollTo({top:0,behavior:'smooth'});start(job.mode==='audio'?'audio':'video',job.mode==='audio'?$('#get-audio'):$('#get-video'));}
   if(save){const row=history.find(h=>h.id===save.dataset.save);if(row){row.opened=true;persist();}}
 });
 function renderHistory(){
@@ -126,8 +149,23 @@ function clearHistory(){if(!confirm('مسح سجل الروابط؟ لن تُح�
 $('#clear-history').addEventListener('click',clearHistory);$('#clear-local').addEventListener('click',clearHistory);
 document.querySelectorAll('[data-view],[data-open]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.view||b.dataset.open)));
 $('#install').addEventListener('click',()=>dialog('#install-dialog'));
+const shareBase=`${location.origin}${location.pathname}#`;
+$('#share-link').textContent=shareBase;
+$('#share-setup').addEventListener('click',()=>dialog('#share-dialog'));
+$('#copy-share-link').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(shareBase);toast('نُسخ الرابط. الصقه في إجراء «نص».');}catch{toast('اضغط مطولًا على الرابط وانسخه.');}});
 document.querySelectorAll('dialog .close,dialog .close-action').forEach(b=>b.addEventListener('click',()=>b.closest('dialog').close()));
 function connection(){ $('#offline').hidden=navigator.onLine;if(navigator.onLine)schedulePoll(0); }
 window.addEventListener('online',connection);window.addEventListener('offline',connection);document.addEventListener('visibilitychange',()=>{if(document.hidden)clearTimeout(pollTimer);else schedulePoll(0);});
 if('serviceWorker'in navigator)navigator.serviceWorker.register(new URL('sw.js',document.baseURI).pathname,{updateViaCache:'none'}).then(registration=>registration.update()).catch(()=>{});
 connection();renderJobs();
+// Links arriving from the iPhone share-sheet shortcut (#link), Android share
+// targets (?url= / ?text=) or a plain ?url= start the best video at once.
+const params=new URLSearchParams(location.search);
+let incoming=params.get('url')||params.get('text')||'';
+try{if(!incoming&&location.hash.length>1)incoming=decodeURIComponent(location.hash.slice(1));}catch{incoming=location.hash.slice(1);}
+if(/https:\/\//i.test(incoming)){
+  window.history.replaceState(null,'',location.pathname);
+  $('#url').value=incoming.slice(0,2048);
+  const audio=params.get('mode')==='audio';
+  start(audio?'audio':'video',audio?$('#get-audio'):$('#get-video'));
+}
