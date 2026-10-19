@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#04050b">
+  <meta name="theme-color" content="#031331">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Bang-ZE">
@@ -15,8 +15,8 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="preload" href="./fonts/HayyakumAllah-Regular.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="./fonts/HayyakumAllah-Bold.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="./interface.css?v=2.1.0">
-  <script src="./app.js?v=2.1.0" type="module"></script>
+  <link rel="stylesheet" href="./interface.css?v=2.2.0">
+  <script src="./app.js?v=2.2.0" type="module"></script>
 </head>
 <body>
   <div class="ambient" aria-hidden="true"><i class="aurora"></i><i class="grid-glow"></i></div>
@@ -44,7 +44,7 @@
             <button class="ghost-action" id="get-audio" type="submit" data-mode="audio"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 18V5l11-2v13M9 18a3 3 0 1 1-3-3 3 3 0 0 1 3 3Zm11-2a3 3 0 1 1-3-3 3 3 0 0 1 3 3Z"/></svg><span>الصق ونزّل الصوت فقط</span></button>
             <label for="url">أو الصق الرابط هنا ويبدأ التنزيل وحده</label>
             <div class="url-wrap"><textarea id="url" name="url" rows="2" dir="ltr" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="2048" placeholder="ألصق الرابط هنا…"></textarea></div>
-            <div class="platforms" dir="ltr"><span data-p="yt">YouTube</span><span data-p="ig">Instagram</span><span data-p="fb">Facebook</span><span data-p="pin">Pinterest</span></div>
+            <div class="platforms" dir="ltr"><span data-p="ig">Instagram</span><span data-p="fb">Facebook</span><span data-p="pin">Pinterest</span></div>
           </form>
           <p id="link-message" class="message" role="status" aria-live="polite"></p>
           <section id="preview" class="preview" aria-label="الملف الذي يُجهَّز" hidden>
@@ -59,11 +59,11 @@
     <section id="history-view" hidden aria-labelledby="history-title"><div class="intro"><span class="eyebrow"><i></i> على هذا الجهاز</span><h1 id="history-title">سجل <em>الروابط</em></h1><p>آخر 50 ملفًا جُهّزت هنا. هذا سجل، وليس نسخة من ملفاتك.</p></div><div class="section-heading"><span id="history-count"></span><button id="clear-history" class="text-button">مسح السجل</button></div><div id="history"></div></section>
     <section id="storage-view" hidden aria-labelledby="storage-title"><div class="intro"><span class="eyebrow"><i></i> واضح من البداية</span><h1 id="storage-title">مكان لكل <em>شيء.</em></h1><p>ملفاتك على جهازك. مساحة المتصفح خفيفة.</p></div>
       <div class="storage-list"><article><span class="storage-icon">↧</span><div><h2>الملف النهائي</h2><p>يحفظه Safari في مجلد التنزيلات الذي اخترته. للحفظ محليًا: الإعدادات ← التطبيقات ← Safari ← التنزيلات ← «على الـiPhone».</p><small>لا يمكن لموقع ويب تغيير هذا الإعداد عنك.</small></div></article><article><span class="storage-icon">◷</span><div><h2>نسخة مؤقتة لمدة ساعة</h2><p>يجهّز الخادم الملف ثم يحذفه تلقائيًا بعد ساعة. الحد الأقصى للملف 1 غيغابايت، ولمساحة التجهيز 4 غيغابايت. قد تُحذف الملفات أبكر عند إعادة تشغيل الاستضافة المؤقتة.</p></div></article><article><span class="storage-icon">≡</span><div><h2>سجل صغير فقط</h2><p>آخر 50 عنوانًا ورابطًا وحالة تنزيل، دون الفيديوهات أو الصور. مسح السجل لا يحذف الملفات التي حفظتها في «الملفات».</p><button id="clear-local" class="text-button">مسح سجل الجهاز</button></div></article><article><span class="storage-icon">↗</span><div><h2>أثناء الحفظ</h2><p>افتح رابط الحفظ عند انتهاء التجهيز. إذا عرض iPhone الفيديو بدل تنزيله، استخدم المشاركة ← «حفظ في الملفات». لا يمكننا تأكيد اكتمال الحفظ داخل Safari، أو ضمان استمرار التنزيل بعد تعليق التطبيق.</p></div></article></div>
-      <p class="version" dir="ltr">Bang-ZE Web 2.1.0</p>
+      <p class="version" dir="ltr">Bang-ZE Web 2.2.0</p>
     </section>
   </main>
   <nav class="navigation" aria-label="التنقل الرئيسي"><div class="nav-lens" aria-hidden="true"></div><button data-view="download-view" aria-current="page"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4"/></svg><span>تنزيل</span></button><button data-view="history-view"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 11a9 9 0 1 1 3 8M3 5v6h6m3-5v6l4 2"/></svg><span>السجل</span></button><button data-view="storage-view"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 6h7l2 2h9v12H3z"/></svg><span>التخزين</span></button></nav>
   <dialog id="install-dialog"><button class="close" aria-label="إغلاق">×</button><img class="install-logo" src="./icons/apple-touch-icon.png" alt="" width="72" height="72"><h2>Bang-ZE على شاشتك</h2><p>افتح رابط التطبيق في Safari على الآيفون.</p><ol><li>اضغط زر المشاركة.</li><li>اختر «إضافة إلى الشاشة الرئيسية».</li><li>فعّل «فتح كتطبيق ويب» إذا ظهر، ثم اضغط «إضافة».</li></ol><p class="muted">إضافة الأيقونة لا تعني تنزيل الملفات تلقائيًا. خدمة التنزيل تحتاج أن تكون متصلة.</p><button class="primary close-action">فهمت</button></dialog>
-  <dialog id="share-dialog"><button class="close" aria-label="إغلاق">×</button><h2>Bang-ZE في قائمة المشاركة</h2><p>الآيفون لا يسمح لمواقع الويب بالظهور في قائمة المشاركة مباشرة، لذلك نستخدم «اختصار» من Apple. يُعدّ مرة واحدة فقط:</p><ol><li>افتح تطبيق «الاختصارات» (Shortcuts) واضغط ＋.</li><li>أضف إجراء «نص» (Text) والصق فيه هذا الرابط:<span class="share-link" dir="ltr" id="share-link"></span><button class="text-button" id="copy-share-link" type="button">نسخ الرابط</button></li><li>ضع المؤشر بعد علامة # في آخر الرابط، واختر المتغير «مُدخل الاختصار» (Shortcut Input).</li><li>أضف إجراء «فتح عناوين URL» (Open URLs).</li><li>اضغط ⓘ في الأسفل وفعّل «إظهار في ورقة المشاركة» (Show in Share Sheet)، وسمِّ الاختصار «Bang-ZE».</li></ol><p><strong>بعدها:</strong> في YouTube أو Instagram أو Facebook أو Pinterest اضغط «مشاركة» ← «المزيد» ← Bang-ZE. يفتح التطبيق ويبدأ تنزيل أعلى جودة وحده.</p><button class="primary close-action">فهمت</button></dialog>
+  <dialog id="share-dialog"><button class="close" aria-label="إغلاق">×</button><h2>Bang-ZE في قائمة المشاركة</h2><p>الآيفون لا يسمح لمواقع الويب بالظهور في قائمة المشاركة مباشرة، لذلك نستخدم «اختصار» من Apple. يُعدّ مرة واحدة فقط:</p><ol><li>افتح تطبيق «الاختصارات» (Shortcuts) واضغط ＋.</li><li>أضف إجراء «نص» (Text) والصق فيه هذا الرابط:<span class="share-link" dir="ltr" id="share-link"></span><button class="text-button" id="copy-share-link" type="button">نسخ الرابط</button></li><li>ضع المؤشر بعد علامة # في آخر الرابط، واختر المتغير «مُدخل الاختصار» (Shortcut Input).</li><li>أضف إجراء «فتح عناوين URL» (Open URLs).</li><li>اضغط ⓘ في الأسفل وفعّل «إظهار في ورقة المشاركة» (Show in Share Sheet)، وسمِّ الاختصار «Bang-ZE».</li></ol><p><strong>بعدها:</strong> في Instagram أو Facebook أو Pinterest اضغط «مشاركة» ← «المزيد» ← Bang-ZE. يفتح التطبيق ويبدأ تنزيل أعلى جودة وحده.</p><button class="primary close-action">فهمت</button></dialog>
   <div id="toast" role="status" aria-live="polite" hidden></div>
 </body></html>

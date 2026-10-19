@@ -1,6 +1,6 @@
-const CACHE = 'bangze-shell-2.1.0';
+const CACHE = 'bangze-shell-2.2.0';
 const ROOT = new URL('./',self.location.href).pathname;
-const SHELL = ["", "index.html", "interface.css?v=2.1.0", "app.js?v=2.1.0", "motion.js?v=2.1.0", "icon.svg", "grain.svg", "fonts/HayyakumAllah-Light.woff2", "fonts/HayyakumAllah-Regular.woff2", "fonts/HayyakumAllah-Medium.woff2", "fonts/HayyakumAllah-Bold.woff2", "manifest.webmanifest", "icons/apple-touch-icon.png"].map(p=>ROOT+p);
+const SHELL = ["", "index.html", "interface.css?v=2.2.0", "app.js?v=2.2.0", "motion.js?v=2.2.0", "icon.svg", "grain.svg", "fonts/HayyakumAllah-Light.woff2", "fonts/HayyakumAllah-Regular.woff2", "fonts/HayyakumAllah-Medium.woff2", "fonts/HayyakumAllah-Bold.woff2", "manifest.webmanifest", "icons/apple-touch-icon.png"].map(p=>ROOT+p);
 const SHELL_PATHS = new Set(SHELL.map(path => new URL(path, self.location.origin).pathname));
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL.map(path => new Request(path, {cache:'reload'})))).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k.startsWith('bangze-shell-') && k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });

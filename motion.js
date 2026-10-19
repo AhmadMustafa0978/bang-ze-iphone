@@ -6,8 +6,8 @@ const EASE='cubic-bezier(.22,1,.36,1)';
 const SPRING='cubic-bezier(.34,1.56,.64,1)';
 const fine=matchMedia('(hover:hover) and (pointer:fine)').matches;
 const pointer={x:-1e5,y:-1e5};
-const PLASMA=['#4df3ff','#7fdcff','#8c5bff','#b07bff','#ff4fd8','#ffffff'];
-const PALETTES={ready:['#b6ff5c','#5cffb0','#4df3ff','#e3ff9e','#9dffdf','#ffffff'],error:['#ff5a76','#ff2d55','#ff8a65','#ff4fd8','#ff9aa8','#ffffff']};
+const PLASMA=['#ffd100','#ffe566','#1e5ac8','#3f7be0','#8fb6ff','#ffffff'];
+const PALETTES={ready:['#ffd100','#ffe14d','#fff1a6','#ffc400','#ffe566','#ffffff'],error:['#ff5a76','#ff2d55','#ff8a65','#ff7a59','#ff9aa8','#ffffff']};
 const LABELS={idle:'جاهز لرابطك',linked:'الرابط في مكانه',reading:'نقرأ الجودات المتاحة',preview:'اختر ما تحتاجه',working:'ملفك قيد التجهيز',ready:'جاهز لينتقل إلى ملفاتك',error:'نحتاج محاولة أخرى'};
 
 function animate(el,frames,options={}){

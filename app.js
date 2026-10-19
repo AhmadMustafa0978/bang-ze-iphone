@@ -1,4 +1,4 @@
-import {enter,setPhase,alignNavigation,openDialog} from './motion.js?v=2.1.0';
+import {enter,setPhase,alignNavigation,openDialog} from './motion.js?v=2.2.0';
 const $ = s => document.querySelector(s);
 // The published Pages build has a fixed API origin. The Docker build uses
 // its own origin. Neither depends on an asynchronously loaded config script.
@@ -47,8 +47,8 @@ function clientLink(value) {
   let u; try{u=new URL(found[0].replace(/[).,،]+$/,''));}catch{throw new Error('الرابط غير مكتمل. انسخه من جديد ثم اضغط الزر.');}
   if(u.username||u.password||u.port)throw new Error('استخدم رابط HTTPS مباشرًا من المنصة.');
   const host=u.hostname.toLowerCase();
-  if(!['youtube.com','www.youtube.com','m.youtube.com','music.youtube.com','youtu.be','instagram.com','www.instagram.com','facebook.com','www.facebook.com','m.facebook.com','fb.watch','pinterest.com','www.pinterest.com','pin.it'].includes(host))throw new Error('هذا الرابط ليس من YouTube أو Instagram أو Facebook أو Pinterest.');
-  if(u.pathname.startsWith('/playlist') || (/youtube\.com$/.test(host) && !['/watch','/shorts/','/live/'].some(p=>u.pathname.startsWith(p))))throw new Error('هذا رابط قائمة أو قناة. افتح الفيديو نفسه وانسخ رابطه.');
+  if(['youtube.com','www.youtube.com','m.youtube.com','music.youtube.com','youtu.be'].includes(host))throw new Error('روابط YouTube غير مدعومة. استخدم Instagram أو Facebook أو Pinterest.');
+  if(!['instagram.com','www.instagram.com','facebook.com','www.facebook.com','m.facebook.com','fb.watch','pinterest.com','www.pinterest.com','pin.it'].includes(host))throw new Error('هذا الرابط ليس من Instagram أو Facebook أو Pinterest.');
   return u.href;
 }
 const actions=[...document.querySelectorAll('[data-mode]')].map(button=>({button,label:button.querySelector('span').textContent}));
