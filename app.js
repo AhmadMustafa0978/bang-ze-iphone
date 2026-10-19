@@ -1,4 +1,4 @@
-import {enter,setPhase,alignNavigation,sweep,openDialog} from './motion.js?v=1.0.4';
+import {enter,setPhase,alignNavigation,sweep,openDialog} from './motion.js?v=2.0.1';
 const $ = s => document.querySelector(s);
 // The published Pages build has a fixed API origin. The Docker build uses
 // its own origin. Neither depends on an asynchronously loaded config script.
@@ -91,6 +91,8 @@ function upsert(job) {
   persist();
 }
 function jobMarkup(job) {
+  // A signed link stops working at its expiry even before the next poll arrives.
+  if(job.status==='ready'&&Number.isFinite(job.expires)&&job.expires*1000<=Date.now())job={...job,status:'expired'};
   const ready=job.status==='ready';const active=ACTIVE.has(job.status);
   const percent=Number.isFinite(job.progress)?Math.max(0,Math.min(99,job.progress)):null;
   // The server signs the URL; only a same-backend relative file path is accepted.
@@ -104,7 +106,10 @@ async function poll() {
   let lost=false;
   for(const id of ids){try{upsert(await api(`/jobs/${id}`));}catch(err){if([404,410].includes(err.status)){const old=jobs.get(id)||history.find(h=>h.id===id);if(old)upsert({...old,status:'expired',error:'لم تعد النسخة المؤقتة متاحة. أعد معاينة الرابط.'});}else lost=true; if(!token)break;}}
   if(lost)message('تعذّر تحديث بعض الملفات. سنحاول مجددًا عند الاتصال؛ لا يعني ذلك فشل التجهيز.',true);
-  renderJobs();if([...jobs.values()].some(j=>ACTIVE.has(j.status))||lost)schedulePoll(lost?10000:3000);
+  renderJobs();
+  const values=[...jobs.values()];
+  if(values.some(j=>ACTIVE.has(j.status))||lost)schedulePoll(lost?10000:3000);
+  else if(values.some(j=>j.status==='ready'))schedulePoll(30000);
 }
 $('#jobs').addEventListener('click',async e=>{
   const cancel=e.target.closest('[data-cancel]'),retry=e.target.closest('[data-retry]'),save=e.target.closest('[data-save]');

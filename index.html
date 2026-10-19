@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#09111b">
+  <meta name="theme-color" content="#04050b">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Bang-ZE">
@@ -13,35 +13,26 @@
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
   <link rel="manifest" href="./manifest.webmanifest">
-  <link rel="stylesheet" href="./interface.css?v=1.0.4">
-  <script src="./app.js?v=1.0.4" type="module"></script>
+  <link rel="stylesheet" href="./interface.css?v=2.0.1">
+  <script src="./app.js?v=2.0.1" type="module"></script>
 </head>
 <body>
-  <div class="ambient" aria-hidden="true"></div>
+  <div class="ambient" aria-hidden="true"><i class="aurora"></i><i class="grid-glow"></i></div>
   <header class="header">
-    <a class="brand" href="./" aria-label="Bang-ZE الرئيسية"><img src="./icon.svg" width="42" height="42" alt=""><span dir="ltr">Bang-ZE<small>مصمّم ليبقى خفيفًا.</small></span></a>
+    <a class="brand" href="./" aria-label="Bang-ZE الرئيسية"><span class="brand-mark"><img src="./icon.svg" width="44" height="44" alt=""></span><span dir="ltr"><b class="brand-word" data-text="Bang-ZE">Bang-ZE</b><small>مصمّم ليبقى خفيفًا.</small></span></a>
     <button class="install-button" id="install" aria-label="إضافة إلى الشاشة الرئيسية"><span>على شاشتك</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 16V3m-4 4 4-4 4 4M5 12v8h14v-8"/></svg></button>
   </header>
   <main>
     <div class="connectivity" id="offline" hidden>أنت دون اتصال. يبقى السجل متاحًا، وسنحدّث حالة الملفات عند عودة الإنترنت.</div>
     <section id="download-view" aria-labelledby="title">
-      <div class="intro"><span class="eyebrow"><i></i> رابط واحد. كل ما تحتاجه.</span><h1 id="title">من الرابط إلى ملفاتك.</h1><p>اختر الفيديو أو الصوت. نحن نجهّز الباقي.</p></div>
+      <div class="intro"><span class="eyebrow"><i></i> رابط واحد. كل ما تحتاجه.</span><h1 id="title">من الرابط إلى <em>ملفاتك.</em></h1><p>اختر الفيديو أو الصوت. نحن نجهّز الباقي.</p></div>
       <div class="workspace">
         <div class="transfer-scene" data-phase="idle" aria-hidden="true">
-          <div class="scene-grid"></div>
-          <svg class="transfer-art" viewBox="0 0 400 340" fill="none">
-            <defs><linearGradient id="ring-shade" x1="20" y1="40" x2="370" y2="270" gradientUnits="userSpaceOnUse"><stop stop-color="#5CBFFF" stop-opacity=".65"/><stop offset="1" stop-color="#5CBFFF" stop-opacity=".02"/></linearGradient><linearGradient id="core-shade" x1="160" y1="80" x2="240" y2="220" gradientUnits="userSpaceOnUse"><stop stop-color="#76CDFF"/><stop offset="1" stop-color="#4388FF"/></linearGradient></defs>
-            <g class="orbit-frame"><ellipse cx="200" cy="160" rx="154" ry="66" transform="rotate(-27 200 160)" stroke="url(#ring-shade)"/><ellipse cx="200" cy="160" rx="154" ry="66" transform="rotate(27 200 160)" stroke="url(#ring-shade)" stroke-dasharray="3 7"/><circle cx="200" cy="160" r="102" stroke="#70BDFF" stroke-opacity=".08"/></g>
-            <g class="satellite satellite-one"><rect x="63" y="107" width="36" height="42" rx="9" fill="#152638" stroke="#35516B"/><path d="m77 121 10 7-10 7z" fill="#8AD3FF"/></g>
-            <g class="satellite satellite-two"><rect x="292" y="177" width="36" height="42" rx="9" fill="#152638" stroke="#35516B"/><path d="M304 191v12m0-6a5 5 0 0 0 9-3v-5m-9 13a3 3 0 1 1-3-3m12-5a3 3 0 1 1-3-3" stroke="#8AD3FF" stroke-width="1.5"/></g>
-            <g class="core-group"><path d="m200 89 62 35v72l-62 36-62-36v-72z" fill="#0C1725" stroke="#74C6FF" stroke-opacity=".3"/><path d="m200 99 53 30v62l-53 31-53-31v-62z" fill="#10243A"/>
-              <path class="core-z" d="M174 135h52v12l-28 28h24v-9l15 17-15 17v-13h-51v-13l28-27h-25z" fill="url(#core-shade)"/>
-              <g class="core-arrow" stroke="#9BDEFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M200 137v42m-15-15 15 15 15-15m-32 30h34"/></g>
-              <path class="core-check" d="m180 163 14 14 28-31" stroke="#B3EDFF" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-            </g>
-            <g class="scene-packet"><rect x="190" y="64" width="20" height="25" rx="5" fill="#8AD3FF"/><path d="M195 72h10m-10 5h7" stroke="#183754" stroke-width="1.5"/></g>
-            <path class="landing-line" d="M166 270h68" stroke="#3D729E" stroke-width="2" stroke-linecap="round"/>
-          </svg>
+          <div class="scene-halo"></div>
+          <div class="orbit orbit-one"></div>
+          <div class="orbit orbit-two"></div>
+          <canvas class="core-canvas"></canvas>
+          <div class="shockwave"></div>
           <div class="scene-caption"><span class="phase-light"></span><span id="scene-label">جاهز لرابطك</span></div>
           <div class="flow-caption"><span>رابط</span><i></i><span>اختيارك</span><i></i><span>ملفاتك</span></div>
         </div>
@@ -49,14 +40,14 @@
           <form id="link-form">
             <label for="url">رابط المحتوى</label>
             <div class="url-wrap"><textarea id="url" name="url" rows="2" dir="ltr" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="2048" placeholder="ألصق الرابط هنا…" required></textarea><button type="button" id="paste" aria-label="لصق الرابط" class="paste"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="7" y="3" width="10" height="5" rx="2"/><path d="M7 5H4v16h16V5h-3"/></svg>لصق</button></div>
-            <div class="platforms" dir="ltr"><span>YouTube</span><span>Instagram</span><span>Facebook</span><span>Pinterest</span></div>
+            <div class="platforms" dir="ltr"><span data-p="yt">YouTube</span><span data-p="ig">Instagram</span><span data-p="fb">Facebook</span><span data-p="pin">Pinterest</span></div>
             <button class="primary" id="inspect" type="submit"><span>معاينة الرابط</span><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M19 5 5 19M5 8v11h11"/></svg></button>
           </form>
           <p id="link-message" class="message" role="status" aria-live="polite"></p>
           <section id="preview" class="preview" aria-label="معاينة المحتوى" hidden>
             <div class="media-heading"><img id="thumbnail" alt="" referrerpolicy="no-referrer"><div><span id="source" class="eyebrow"></span><h2 id="media-title"></h2><p id="media-info"></p></div></div>
-            <fieldset class="mode"><legend>ماذا تريد أن تحفظ؟</legend><label><input type="radio" name="mode" value="video" checked><span>فيديو</span></label><label><input type="radio" name="mode" value="audio"><span>صوت فقط</span></label></fieldset>
-            <label class="select-label" for="quality">الجودة المتاحة</label><select id="quality"></select>
+            <fieldset class="mode"><legend>ماذا تريد أن تحفظ؟</legend><div class="mode-track"><label><input type="radio" name="mode" value="video" checked><span>فيديو</span></label><label><input type="radio" name="mode" value="audio"><span>صوت فقط</span></label></div></fieldset>
+            <label class="select-label" for="quality">الجودة المتاحة</label><div class="select-wrap"><select id="quality"></select></div>
             <p id="format-note" class="muted"></p>
             <button id="prepare" class="primary">تجهيز الملف</button>
           </section>
@@ -65,10 +56,10 @@
       <section class="activity" aria-label="مهامك"><div id="activity-heading" class="section-heading" hidden><h2>ملفاتك</h2><span id="job-count">0</span></div><div id="jobs"></div><div id="empty-jobs" hidden></div><div class="save-hint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6h7l2 2h9v12H3z"/></svg><div><strong>الملفات على الآيفون</strong><p>ذاكرة المتصفح تبقى خفيفة.</p></div><button class="text-button" data-open="storage-view">طريقة الحفظ</button></div></section>
       <p class="footnote">روابط منشورات منفردة متاحة لك. قد يطلب المصدر تسجيل الدخول أو يرفض التنزيل. استخدم المحتوى الذي تملك حق حفظه.</p>
     </section>
-    <section id="history-view" hidden aria-labelledby="history-title"><div class="intro"><span class="eyebrow">على هذا الجهاز</span><h1 id="history-title">سجل الروابط</h1><p>آخر 50 ملفًا جُهّزت هنا. هذا سجل، وليس نسخة من ملفاتك.</p></div><div class="section-heading"><span id="history-count"></span><button id="clear-history" class="text-button">مسح السجل</button></div><div id="history"></div></section>
-    <section id="storage-view" hidden aria-labelledby="storage-title"><div class="intro"><span class="eyebrow">واضح من البداية</span><h1 id="storage-title">مكان لكل شيء.</h1><p>ملفاتك على جهازك. مساحة المتصفح خفيفة.</p></div>
+    <section id="history-view" hidden aria-labelledby="history-title"><div class="intro"><span class="eyebrow"><i></i> على هذا الجهاز</span><h1 id="history-title">سجل <em>الروابط</em></h1><p>آخر 50 ملفًا جُهّزت هنا. هذا سجل، وليس نسخة من ملفاتك.</p></div><div class="section-heading"><span id="history-count"></span><button id="clear-history" class="text-button">مسح السجل</button></div><div id="history"></div></section>
+    <section id="storage-view" hidden aria-labelledby="storage-title"><div class="intro"><span class="eyebrow"><i></i> واضح من البداية</span><h1 id="storage-title">مكان لكل <em>شيء.</em></h1><p>ملفاتك على جهازك. مساحة المتصفح خفيفة.</p></div>
       <div class="storage-list"><article><span class="storage-icon">↧</span><div><h2>الملف النهائي</h2><p>يحفظه Safari في مجلد التنزيلات الذي اخترته. للحفظ محليًا: الإعدادات ← التطبيقات ← Safari ← التنزيلات ← «على الـiPhone».</p><small>لا يمكن لموقع ويب تغيير هذا الإعداد عنك.</small></div></article><article><span class="storage-icon">◷</span><div><h2>نسخة مؤقتة لمدة ساعة</h2><p>يجهّز الخادم الملف ثم يحذفه تلقائيًا بعد ساعة. الحد الأقصى للملف 1 غيغابايت، ولمساحة التجهيز 4 غيغابايت. قد تُحذف الملفات أبكر عند إعادة تشغيل الاستضافة المؤقتة.</p></div></article><article><span class="storage-icon">≡</span><div><h2>سجل صغير فقط</h2><p>آخر 50 عنوانًا ورابطًا وحالة تنزيل، دون الفيديوهات أو الصور. مسح السجل لا يحذف الملفات التي حفظتها في «الملفات».</p><button id="clear-local" class="text-button">مسح سجل الجهاز</button></div></article><article><span class="storage-icon">↗</span><div><h2>أثناء الحفظ</h2><p>افتح رابط الحفظ عند انتهاء التجهيز. إذا عرض iPhone الفيديو بدل تنزيله، استخدم المشاركة ← «حفظ في الملفات». لا يمكننا تأكيد اكتمال الحفظ داخل Safari، أو ضمان استمرار التنزيل بعد تعليق التطبيق.</p></div></article></div>
-      <p class="version" dir="ltr">Bang-ZE Web 1.0.4</p>
+      <p class="version" dir="ltr">Bang-ZE Web 2.0.1</p>
     </section>
   </main>
   <nav class="navigation" aria-label="التنقل الرئيسي"><div class="nav-lens" aria-hidden="true"></div><button data-view="download-view" aria-current="page"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4"/></svg><span>تنزيل</span></button><button data-view="history-view"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 11a9 9 0 1 1 3 8M3 5v6h6m3-5v6l4 2"/></svg><span>السجل</span></button><button data-view="storage-view"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 6h7l2 2h9v12H3z"/></svg><span>التخزين</span></button></nav>
