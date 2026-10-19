@@ -26,12 +26,13 @@ function needService() {
 async function ensureSession(force=false){
   if(token&&!force)return;
   if(sessionPromise)return sessionPromise;
-  sessionPromise=(async()=>{const result=await api('/session',{method:'POST',body:'{}'});token=result.token;try{localStorage.setItem('bangze-visitor-v1',token);}catch{}})().finally(()=>sessionPromise=null);
+  sessionPromise=(async()=>{const result=await api('/session',{method:'POST',body:'{}'});if(typeof result.token!=='string')throw new Error('خدمة التنزيل تبدأ الآن. انتظر قليلًا ثم حاول مجددًا.');token=result.token;try{localStorage.setItem('bangze-visitor-v1',token);}catch{}})().finally(()=>sessionPromise=null);
   return sessionPromise;
 }
 async function api(path,options={}) {
   const response=await fetch(`${apiBase}/api${path}`,{...options,headers:{'Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`} : {}),...options.headers},cache:'no-store',signal:options.signal||AbortSignal.timeout(90000)});
-  const body=await response.json().catch(()=>({detail:'تعذّر قراءة رد خدمة التنزيل.'}));
+  if(!response.headers.get('content-type')?.includes('application/json'))throw new Error('خدمة التنزيل تستيقظ الآن أو لا تستجيب. انتظر قليلًا ثم حاول مجددًا.');
+  const body=await response.json().catch(()=>{throw new Error('تعذّر قراءة رد خدمة التنزيل. حاول مجددًا.');});
   if(!response.ok) {
     if(response.status===401&&path!=='/session'&&!options.refreshed) { token=''; await ensureSession(true);return api(path,{...options,refreshed:true}); }
     const error=new Error(typeof body.detail==='string'?body.detail:'تعذّر إكمال الطلب. حاول مجددًا.');error.status=response.status;throw error;

@@ -1,4 +1,4 @@
-const CACHE = 'bangze-shell-1.0.2';
+const CACHE = 'bangze-shell-1.0.3';
 const ROOT = new URL('./',self.location.href).pathname;
 const SHELL = ["", "index.html", "interface.css", "app.js", "motion.js", "icon.svg", "manifest.webmanifest", "icons/apple-touch-icon.png"].map(p=>ROOT+p);
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL))); });

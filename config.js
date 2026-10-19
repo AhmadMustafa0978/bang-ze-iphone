@@ -1,2 +1,3 @@
-// Replaced by the server when hosted together. Static hosting needs an HTTPS API origin.
-window.BANGZE_CONFIG = { apiBase: "", configured: false };
+// Public API origin only. No credentials are bundled in the PWA.
+// The standalone Docker server overrides this file with its same-origin config.
+window.BANGZE_CONFIG = { apiBase: "https://bang-ze-engine.onrender.com", configured: true };
