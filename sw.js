@@ -1,6 +1,6 @@
-const CACHE = 'bangze-shell-1.0.4';
+const CACHE = 'bangze-shell-1.0.5';
 const ROOT = new URL('./',self.location.href).pathname;
-const SHELL = ["", "index.html", "interface.css", "app.js?v=1.0.3", "motion.js", "icon.svg", "manifest.webmanifest", "icons/apple-touch-icon.png"].map(p=>ROOT+p);
+const SHELL = ["", "index.html", "interface.css?v=1.0.4", "app.js?v=1.0.4", "motion.js?v=1.0.4", "icon.svg", "manifest.webmanifest", "icons/apple-touch-icon.png"].map(p=>ROOT+p);
 const SHELL_PATHS = new Set(SHELL.map(path => new URL(path, self.location.origin).pathname));
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL.map(path => new Request(path, {cache:'reload'})))).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k.startsWith('bangze-shell-') && k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });

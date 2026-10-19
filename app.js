@@ -1,4 +1,4 @@
-import {enter,setPhase,alignNavigation,sweep,openDialog} from './motion.js';
+import {enter,setPhase,alignNavigation,sweep,openDialog} from './motion.js?v=1.0.4';
 const $ = s => document.querySelector(s);
 // The published Pages build has a fixed API origin. The Docker build uses
 // its own origin. Neither depends on an asynchronously loaded config script.
